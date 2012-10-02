@@ -1,0 +1,185 @@
+#! /usr/bin/env perl
+
+use strict;
+use integer;
+use Pod::Usage;
+use Getopt::Long;
+
+=head1 NAME
+
+256colors - Display 256 color
+
+=head1 SYNOPSIS
+
+B<256colors> [options]
+
+=head1 OPTIONS AND ARGUMENTS
+
+=over 8
+
+=item B<--help> or B<-h>
+
+Show help
+
+=item B<--man> or B<-?>
+
+Show help as a manpage
+
+=item B<--fg> or B<-f>
+
+Print foreground colors
+
+=item B<--nonbold> or B<-n>
+
+Print foreground colors in non-bold
+
+=item B<--bold> or B<-b>
+
+Print foreground colors in bold
+
+=item B<--set> or B<-s>
+
+Use color scheme of Todd Larason <jtl@molehill.org>
+
+=back
+
+=head1 DESCRIPTION
+
+Output colors on a 256 color terminal. Optionally set a color scheme.
+
+=head1 AUTHOR
+
+(C) Martin VE<auml>th E<lt>martin@mvath.deE<gt>
+
+This script is under the MIT license.
+
+=cut
+
+# Parse Options:
+
+my $set_scheme = '';
+my $foreground = '';
+my $nonbold = '';
+my $boldonly = '';
+
+$Getopt::Long::bundling=1;
+GetOptions(
+  'help|h', sub { pod2usage(1) },
+  'man|?', sub { pod2usage(-verbose=>2) },
+  'fg|f', \$foreground,
+  'normal|n', \$nonbold,
+  'bold|b', \$boldonly,
+  'set|s', \$set_scheme
+) or pod2usage(2);
+
+$foreground = 1 if($nonbold || $boldonly);
+$nonbold = 1 if(!$foreground);
+
+if($set_scheme) {
+	# colors 16-231 are a 6x6x6 color cube
+	for(my $red = 0; $red < 6; $red++) {
+		for(my $green = 0; $green < 6; $green++) {
+			for(my $blue = 0; $blue < 6; $blue++) {
+				printf("\x1b]4;%d;rgb:%2.2x/%2.2x/%2.2x\x1b\\",
+					16 + ($red * 36) + ($green * 6) + $blue,
+				($red ? ($red * 40 + 55) : 0),
+				($green ? ($green * 40 + 55) : 0),
+				($blue ? ($blue * 40 + 55) : 0));
+			}
+		}
+	}
+
+	# colors 232-255 are a grayscale ramp, intentionally leaving out
+	# black and white
+	for(my $gray = 0; $gray < 24; $gray++) {
+		my $level = ($gray * 10) + 8;
+		printf("\x1b]4;%d;rgb:%2.2x/%2.2x/%2.2x\x1b\\",
+			232 + $gray, $level, $level, $level);
+	}
+}
+
+# display the colors
+
+my $finish = "\x1b[0m";
+my $nl = "${finish}\n";
+my $bold;
+
+sub display {
+	my ($color, $fg, $bg) = @_;
+	my $prefix = (!$foreground) ? "3${fg};4" :
+			( $bold ? "4${bg};01;3" :
+				"4${bg};3" );
+	printf('%s%3d ', "\x1b[${prefix}8;5;${color}m", $color)
+}
+
+sub cycle {
+	my ($text, $func) = @_;
+	if(!$boldonly) {
+		print "$text:\n";
+		$bold = '';
+		eval($func);
+		print "\n"
+	}
+	if(!$nonbold) {
+		print "$text in bold:\n";
+		$bold = 1;
+		eval($func);
+		print "\n"
+	}
+}
+
+# first the system ones:
+sub syscol {
+	my $fg = '7';
+	for(my $color = 0; $color < 16; $color++) {
+		$fg = '0' if $color;
+		if($color == 8) {
+			print $nl
+		}
+		&display($color, $fg, $fg)
+	}
+	print $nl
+}
+&cycle('System colors', '&syscol');
+
+# now the color cube
+sub colorcube {
+	my ($s, $e) = @_;
+	for(my $green = 0; $green < 6; $green++) {
+		for(my $red = $s; ; ) {
+			for(my $blue = 0; $blue < 6; $blue++) {
+				my $fg = (($green * 4 + $red * 3 + $blue < 12)) ? '7' : '0';
+				my $bg = ($green || $red || ($blue > 2)) ? '0' : '7';
+				my $color = 16 + ($red * 36) + ($green * 6) + $blue;
+				&display($color, $fg, $bg)
+			}
+			print $finish;
+			last if(++$red == $e);
+			print ' '
+		}
+		print "\n"
+	}
+}
+&cycle('Color cube (6x6x6)',
+'&colorcube(0,3); print "\n"; &colorcube(3,6)');
+
+# now the grayscale ramp
+sub ramp() {
+	my $fg = '7';
+	my $bg = '7';
+	for(my $color = 232; $color < 256; $color++) {
+		&display($color, $fg, $bg);
+		if($color == 234) {
+			$bg = '0'
+		}
+		if($color == 243) {
+			$fg = '0';
+			print $nl
+		}
+	}
+	print $nl
+}
+&cycle('Grayscale ramp (24)', '&ramp');
+
+print "Use option -s to set scheme of Todd Larason\n" if(!$set_scheme);
+print "Use option -f for more colors in foreground\n" if(!$foreground);
