@@ -1,7 +1,7 @@
 # Configuration file for dircolors, a utility to help you set the
 # LS_COLORS environment variable used by GNU ls with the --color option.
 
-# Copyright (C) 1996, 1999-2010 Free Software Foundation, Inc.
+# Copyright (C) 1996-2013 Free Software Foundation, Inc.
 # Copying and distribution of this file, with or without modification,
 # are permitted provided the copyright notice and this notice are preserved.
 
@@ -56,10 +56,13 @@ TERM screen-bce
 TERM screen-bce.xterm-new
 TERM screen-bce.xterm-xfree86
 TERM screen-w
+TERM screen.Eterm
 TERM screen.linux
 TERM screen.rxvt
 TERM screen.xterm-new
 TERM screen.xterm-xfree86
+TERM st
+TERM st-256color
 TERM terminator
 TERM vt100
 TERM xterm
@@ -118,7 +121,7 @@ CAPABILITY	30;46		# file with capability
 STICKY_OTHER_WRITABLE	30;43	# dir that is sticky and other-writable (+t,o+w)
 OTHER_WRITABLE	01;31;43	# dir that is other-writable (o+w) and not sticky
 STICKY		01;34;43	# dir with the sticky bit set (+t) and not other-writable
-EXEC		01;37		# This is for files with execute permission:
+EXEC		01;37		# This is for files with execute permission
 
 
 # List any file extensions like '.gz' or '.tar' that you would like ls

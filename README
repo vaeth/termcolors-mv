@@ -1,2 +1,13 @@
 256colors sample script and dircolors configuration for standard or 256 colors.
 The dircolors configuration is suitable e.g. for black background.
+
+For gentoo, the package is available over the mv overlay (via layman).
+
+To use the colors you have to call
+	eval "`dircolors [path to your install dir]/etc/DIR_COLORS-256`"
+or
+	eval "`dircolors [path to your install dir]/etc/DIR_COLORS`"
+respectively (e.g. in you shell initialization script).
+For zsh, this is done if you use
+	https://github.com/vaeth/zshrc-mv/
+(which you can also install from the mv overlay).
