@@ -1,13 +1,45 @@
-256colors sample script and dircolors configuration for standard or 256 colors.
-The dircolors configuration is suitable e.g. for black background.
+256colors sample script, dircolors configuration files, and a dircolors wrapper
 
 For gentoo, the package is available over the mv overlay (via layman).
 
-To use the colors you have to call
-	eval "`dircolors [path to your install dir]/etc/DIR_COLORS-256`"
-or
-	eval "`dircolors [path to your install dir]/etc/DIR_COLORS`"
-respectively (e.g. in you shell initialization script).
-For zsh, this is done if you use
-	https://github.com/vaeth/zshrc-mv/
-(which you can also install from the mv overlay).
+This package contains two scripts and some "dircolors" colorschemes,
+all appropriate for unix type terminals with 8/16 and 256 colors.
+
+The dircolor colorschemes (in etc/dircolors) are appropriate for
+8/16 colors or 256 colors, respectively, and they were developed
+for standard system colors and Ethan Schoonover's solarized colorscheme,
+respectively.
+
+The system color schemes are developed for black background terminals, only.
+
+The solarized versions work with both, light and dark versions of
+the solarized colorscheme, and if you use them you are responsible on your
+own to set the terminal colors so that the 8/16 system colors are mapped
+to the colors from the solarized scheme.
+The 256-color solarized scheme adds some more colors to the original scheme
+to allow a richer distinction of files.
+
+To use the color schemes you can call
+	eval "`dircolors [path to desired color scheme]`"
+For a fixed installation, I recommend to copy etc/dir_colors or its files
+to /etc or to $DEFAULTS or to ~/.config or ~/.dir_colors
+and to use the dircolors-mv wrapper mentioned below
+
+The scripts (in bin) are:
+
+256colors: A small perl script which just display 256 colors on capable
+terminals in a systematic manner. The usage should be self-explaining.
+
+dircolors-mv: This script is a wrapper for dircolors.
+If you copy this script into your path you can use
+	eval "`dircolors-mv`"
+if you followed the above suggestion about the location.
+This will pick the corresponding file depending on the environment variables
+TERM (to determine whether the terminal is 8-bit capable by a heuristics),
+SOLARIZED (to determine whether output for solarized is desired), and
+DEFAULTS (for the path mentioned above).
+If the heuristics for the terminal does not work for you, just export TERM
+locally, e.g.
+	eval "`TERM=xterm-256colors dircolors-mv`"
+will force a 256 color scheme.
+

@@ -1,0 +1,51 @@
+#! /usr/bin/env sh
+case ${TERM} in
+	*256*)
+		color=:;;
+	*88*|*rxvt-unicode*|linux)
+		color=;;
+	*[aeEkx]term*|*rxvt*|*konsole*|*gnome*|*putty*)
+		color=:;;
+	*)
+		color=:
+		[ "`tput colors`" -ge 256 ] || color=;;
+esac
+case ${SOLARIZED} in
+[nNfF0]*)
+	SOLARIZED=;;
+esac
+Run() {
+	r=${1}
+	shift
+	for s in ${SOLARIZED:+"${r}-solarized"} "${r}"
+	do	for f in ${color:+"${s}"-256} "${s}"
+		do	test -r "${f}" || continue
+			exec dircolors "${@}" -- "${f}"
+			exit
+		done
+	done
+}
+for p in \
+	${DEFAULTS:+"${DEFAULTS}/dir_colors"} \
+	${DEFAULTS:+"${DEFAULTS}/dircolors"} \
+	'/etc/dir_colors' \
+	'/etc/dircolors' \
+	"${HOME}/.dir_colors" \
+	"${HOME}/.dircolors" \
+	"${HOME}/.config/dir_colors" \
+	"${HOME}/.config/dircolors"
+do	test -d "${p}" || continue
+	Run "${p}/DIR_COLORS" "${@}"
+	Run "${p}/dir_colors" "${@}"
+	Run "${p}/dircolors" "${@}"
+done
+for p in \
+	${DEFAULTS:+"${DEFAULTS}"} \
+	'/etc' \
+	"${HOME}/.config"
+do	Run "${p}/DIR_COLORS" "${@}"
+	Run "${p}/dir_colors" "${@}"
+	Run "${p}/dircolors" "${@}"
+done
+Run "${HOME}/.dircolors" "${@}"
+exit 2
