@@ -5,10 +5,11 @@ For gentoo, the package is available over the mv overlay (via layman).
 This package contains two scripts and some "dircolors" colorschemes,
 all appropriate for unix type terminals with 8/16 and 256 colors.
 
-The dircolor colorschemes (in etc/dircolors) are appropriate for
-8/16 colors or 256 colors, respectively, and they were developed
-for standard system colors and Ethan Schoonover's solarized colorscheme,
-respectively.
+To create the dircolor schemes create e.g. the directory /etc/dir_colors,
+change into it, and call the bin/DIR_COLORS-create script (perl is needed).
+These colorschemes are appropriate for 8/16 colors or 256 colors, respectively,
+and they were developed for standard system colors and
+Ethan Schoonover's solarized colorscheme, respectively.
 
 The system color schemes are developed for black background terminals, only.
 
@@ -43,3 +44,8 @@ locally, e.g.
 	eval "`TERM=xterm-256colors dircolors-mv`"
 will force a 256 color scheme.
 
+DIR_COLORS-create: This script will generate in the current directory:
+DIR_COLORS, DIRCOLORS-solarized, DIRCOLORS-256, DIRCOLORS-solarized-256
+(if these files exist they are overridden without any warning).
+These files are the dircolor schemes for normal and solarized mode in
+8/16 or 256 color terminals, respectively.
