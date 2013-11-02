@@ -1,4 +1,4 @@
-#! /usr/bin/env perl
+#!/usr/bin/env perl
 use integer;
 use strict;
 my $skeleton = << 'END_OF_SKELETON';
