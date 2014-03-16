@@ -474,7 +474,7 @@ EXEC		<01;37> # This is for files with execute permission
 </lower>
 </block>
 
-# binary image/text formats
+# binary image/text/ebook formats
 <31||x143|\2>
 <lowerblock>
 .dvi
@@ -482,8 +482,15 @@ EXEC		<01;37> # This is for files with execute permission
 .eps
 .pdf
 .doc
+.rtf
 .odt
 .fig
+.djv
+.djvu
+.epub
+.lit
+.mobi
+.azw
 </lowerblock>
 
 # movie formats
