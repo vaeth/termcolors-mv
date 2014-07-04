@@ -372,6 +372,8 @@ EXEC		<01;37> # This is for files with execute permission
 .rz
 .cpi
 .cpio
+.sfs
+.sqf
 .sqfs
 </lowerblock>
 
