@@ -490,6 +490,7 @@ EXEC		<01;37> # This is for files with execute permission
 .djv
 .djvu
 .epub
+.prc
 .lit
 .mobi
 .azw
