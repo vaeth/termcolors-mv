@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-case ${TERM} in
+case $TERM in
 	*256*)
 		color=:;;
 	*88*|*rxvt-unicode*|linux)
@@ -10,42 +10,42 @@ case ${TERM} in
 		color=:
 		[ "`tput colors`" -ge 256 ] || color=;;
 esac
-case ${SOLARIZED} in
+case $SOLARIZED in
 [nNfF0]*)
 	SOLARIZED=;;
 esac
 Run() {
-	r=${1}
+	r=$1
 	shift
-	for s in ${SOLARIZED:+"${r}-solarized"} "${r}"
-	do	for f in ${color:+"${s}"-256} "${s}"
-		do	test -r "${f}" || continue
-			exec dircolors "${@}" -- "${f}"
+	for s in ${SOLARIZED:+"$r-solarized"} "$r"
+	do	for f in ${color:+"$s"-256} "$s"
+		do	test -r "$f" || continue
+			exec dircolors "$@" -- "$f"
 			exit
 		done
 	done
 }
 for p in \
-	${DEFAULTS:+"${DEFAULTS}/dir_colors"} \
-	${DEFAULTS:+"${DEFAULTS}/dircolors"} \
+	${DEFAULTS:+"$DEFAULTS/dir_colors"} \
+	${DEFAULTS:+"$DEFAULTS/dircolors"} \
 	'/etc/dir_colors' \
 	'/etc/dircolors' \
-	"${HOME}/.dir_colors" \
-	"${HOME}/.dircolors" \
-	"${HOME}/.config/dir_colors" \
-	"${HOME}/.config/dircolors"
-do	test -d "${p}" || continue
-	Run "${p}/DIR_COLORS" "${@}"
-	Run "${p}/dir_colors" "${@}"
-	Run "${p}/dircolors" "${@}"
+	"$HOME/.dir_colors" \
+	"$HOME/.dircolors" \
+	"$HOME/.config/dir_colors" \
+	"$HOME/.config/dircolors"
+do	test -d "$p" || continue
+	Run "$p/DIR_COLORS" "$@"
+	Run "$p/dir_colors" "$@"
+	Run "$p/dircolors" "$@"
 done
 for p in \
-	${DEFAULTS:+"${DEFAULTS}"} \
+	${DEFAULTS:+"$DEFAULTS"} \
 	'/etc' \
-	"${HOME}/.config"
-do	Run "${p}/DIR_COLORS" "${@}"
-	Run "${p}/dir_colors" "${@}"
-	Run "${p}/dircolors" "${@}"
+	"$HOME/.config"
+do	Run "$p/DIR_COLORS" "$@"
+	Run "$p/dir_colors" "$@"
+	Run "$p/dircolors" "$@"
 done
-Run "${HOME}/.dircolors" "${@}"
+Run "$HOME/.dircolors" "$@"
 exit 2
