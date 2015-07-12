@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
-case $TERM in
+set -u
+case ${TERM-} in
 	*256*)
 		color=:;;
 	*88*|*rxvt-unicode*|linux)
@@ -10,7 +11,7 @@ case $TERM in
 		color=:
 		[ "`tput colors`" -ge 256 ] || color=;;
 esac
-case $SOLARIZED in
+case ${SOLARIZED-} in
 [nNfF0]*)
 	SOLARIZED=;;
 esac
