@@ -369,6 +369,7 @@ EXEC		<01;37> # This is for files with execute permission
 .hap
 .ha
 .jar
+.xpi
 .apk
 .rz
 .cpi
