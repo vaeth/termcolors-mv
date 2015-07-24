@@ -526,6 +526,8 @@ EXEC		<01;37> # This is for files with execute permission
 .swf # Flash-player. See also swftools
 .3gp
 .vob
+.webm
+.web
 </lowerblock>
 END_OF_SKELETON
 
