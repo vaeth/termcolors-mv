@@ -9,7 +9,10 @@ case ${TERM-} in
 		color=:;;
 	*)
 		color=:
-		[ "`tput colors`" -ge 256 ] || color=;;
+		num=`tput colors 2>/dev/null` && case ${num:-q} in
+		*[!0-9]*)
+			false;;
+		esac && [ "$num" -ge 256 ] || color=
 esac
 case ${SOLARIZED-} in
 [nNfF0]*)
