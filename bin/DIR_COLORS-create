@@ -5,7 +5,7 @@ my $skeleton = << 'END_OF_SKELETON';
 # Configuration file for dircolors, a utility to help you set the
 # LS_COLORS environment variable used by GNU ls with the --color option.
 
-# Copyright (C) 1996-2013 Free Software Foundation, Inc.
+# Copyright (C) 1996-2016 Free Software Foundation, Inc.
 # Copying and distribution of this file, with or without modification,
 # are permitted provided the copyright notice and this notice are preserved.
 
@@ -15,12 +15,15 @@ my $skeleton = << 'END_OF_SKELETON';
 # You can copy this file to .dir_colors in your $HOME directory to override
 # the system defaults.
 
-# Below, there should be one TERM entry for each termtype that is colorizable
+# Below are TERM entries, which can be a glob patterns, to match
+# against the TERM environment variable to determine if it is colorizable.
+# Note that older versions of coreutils do not support glob patterns
 <term>
 Eterm
 ansi
 color-xterm
 color_xterm
+con[0-9]*x[0-9]*
 con132x25
 con132x30
 con132x43
@@ -38,15 +41,19 @@ dtterm
 eterm-color
 gnome
 gnome-256color
+hurd
 jfbterm
 konsole
 kterm
 linux
 linux-c
 mach-color
+mach-gnu-color
 mlterm
 pcansi
 putty
+putty-256color
+rxvt*
 rxvt
 rxvt-256color
 rxvt-cygwin
@@ -54,6 +61,7 @@ rxvt-cygwin-native
 rxvt-unicode
 rxvt-unicode-256color
 rxvt-unicode256
+screen*
 screen
 screen-256color
 screen-256color-bce
@@ -69,6 +77,7 @@ screen.xterm-xfree86
 st
 st-256color
 terminator
+tmux*
 tmux
 tmux-256color
 tmux-256color-bce
@@ -82,6 +91,7 @@ tmux.rxvt
 tmux.xterm-new
 tmux.xterm-xfree86
 vt100
+xterm*
 xterm
 xterm-16color
 xterm-256color
@@ -242,6 +252,11 @@ EXEC		<01;37> # This is for files with execute permission
 .now
 .nfo
 .diz
+.cfg
+.conf
+.diff
+.patch
+.ini
 </lower>
 </block>
 
@@ -340,7 +355,9 @@ EXEC		<01;37> # This is for files with execute permission
 .tbz2
 .lzma
 .lzm
+.lzo
 .lz
+.lz4
 .xz
 .txz
 .tlz
@@ -352,6 +369,7 @@ EXEC		<01;37> # This is for files with execute permission
 .z
 .dz
 .tz
+.tzo
 .arc
 .zip
 .lzh
@@ -381,9 +399,14 @@ EXEC		<01;37> # This is for files with execute permission
 .hap
 .ha
 .jar
+.war
+.ear
+.sar
+.alz
 .xpi
 .apk
 .rz
+.cab
 .cpi
 .cpio
 .sfs
@@ -397,6 +420,7 @@ EXEC		<01;37> # This is for files with execute permission
 <lower>
 .au
 .mp3
+.m4a
 .ogg
 .flac
 .aac
@@ -434,6 +458,7 @@ EXEC		<01;37> # This is for files with execute permission
 <lower>
 .axa
 .oga
+.opus
 .spx
 .xspf
 </lower>
@@ -461,8 +486,8 @@ EXEC		<01;37> # This is for files with execute permission
 .pic
 .pnm
 .pbm
-.ppm
 .pgm
+.ppm
 .pcm
 .pcc
 .jpg
