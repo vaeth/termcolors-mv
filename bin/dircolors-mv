@@ -14,8 +14,8 @@ case ${TERM-} in
 			false;;
 		esac && [ "$num" -ge 256 ] || color=
 esac
-case ${SOLARIZED-} in
-[nNfF0]*)
+case ${SOLARIZED:-n} in
+[nNfF0-]*|[oO][fF]*)
 	SOLARIZED=;;
 esac
 Run() {
