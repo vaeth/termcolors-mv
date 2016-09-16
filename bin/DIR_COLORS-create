@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 use integer;
 use strict;
+use warnings;
 my $skeleton = << 'END_OF_SKELETON';
 # Configuration file for dircolors, a utility to help you set the
 # LS_COLORS environment variable used by GNU ls with the --color option.
@@ -568,13 +569,15 @@ EXEC		<01;37> # This is for files with execute permission
 </lowerblock>
 END_OF_SKELETON
 
+# Global variables
+
 my @output = (
 	'DIR_COLORS',
 	'DIR_COLORS-solarized',
 	'DIR_COLORS-256',
 	'DIR_COLORS-solarized-256'
 );
-$skeleton =~ s/\r//go;
+$skeleton =~ s{\r}{}go;
 my ($block, $lower, $term);
 my $lowersep;
 my $color;
@@ -582,61 +585,43 @@ my @block;
 my @lower;
 my $mode = 0;
 my $linecount;
-for my $file (@output) {
-	open(my $fh, '>', $file) or &Fatal("cannot open $file for writing");
-	select($fh);
-	$block = $lower = $term = $color = '';
-	$linecount = 4;
-	for my $line (split(/\n/, $skeleton)) {
-		++$linecount;
-		&Process($line);
-	}
-	&Fatal('<block> not closed') if($block);
-	&Fatal('<lower> not closed') if($lower);
-	&Fatal('<term> not closed') if($term);
-	close($fh);
-	++$mode;
-}
-exit(0);
 
-sub Process($) {
-	my($line) = @_;
+sub Process {
+	my ($line) = @_;
 	chomp($line);
-	$line =~ s/\s*$//g;
-	if($line =~ '^\<(.*)\>$') {
+	$line =~ s{\s*$}{}g;
+	if($line =~ m{^\<(.*)\>$}) {
 		my $item = $1;
 		my $found = '';
-		if($item =~ /^\//) {
-			if($item =~ /lower/i) {
-				&CloseLower;
+		if($item =~ m{^\/}) {
+			if($item =~ m{lower}i) {
+				&CloseLower();
 				$found = 1
 			}
-			if($item =~ /block/i) {
-				&CloseBlock;
+			if($item =~ m{block}i) {
+				&CloseBlock();
 				$found = 1
 			}
-			if($item =~/term/i) {
-				&CloseTerm;
+			if($item =~ m{term}i) {
+				&CloseTerm();
 				$found = 1
 			}
 			return if($found);
 			&FatalLine("Tag $item not understood")
 		}
-		if($item =~ /block/i) {
+		if($item =~ m{block}i) {
 			&OpenBlock($item);
 			$found = 1
 		}
-		if($item =~ /lower/i) {
+		if($item =~ m{lower}i) {
 			&OpenLower($item);
 			$found = 1
 		}
-		if($item =~ /term/i) {
+		if($item =~ m{term}i) {
 			&OpenTerm($item);
 			$found = 1
 		}
-		unless($found) {
-			&SetColor($item)
-		}
+		&SetColor($item) unless($found);
 		return
 	}
 	if(($line eq '') || ($line =~ /^\#/)) {
@@ -654,13 +639,13 @@ sub Process($) {
 		print('TERM ', $line, "\n");
 		return
 	}
-	unless($line =~ /^(\S*)\s*(\<([^\>]*)\>)?\s*(\#.*)?$/) {
+	unless($line =~ m{^(\S*)\s*(\<([^\>]*)\>)?\s*(\#.*)?$}) {
 		&FatalLine("cannot parse line: $line")
 	}
 	my ($item, $comment) = ($1, $4);
 	&SetColor($3) if($2 ne '');
 	my $col = (($item eq '') ? '' : $color);
-	if($col =~ s/\#//g) {
+	if($col =~ s{\#}{}g) {
 		$item = '#' . $item
 	}
 	if($lower) {
@@ -673,13 +658,13 @@ sub Process($) {
 	}
 }
 
-sub SetColor($) {
+sub SetColor {
 	my ($c) = @_;
-	&FatalLine("unrecognized color \<${c}\>") if($c =~ /[^xyXY\d;\\\|\#]/);
-	$c =~ s/[xX]/38;5;/g;
-	$c =~ s/[yY]/48;5;/g;
+	&FatalLine("unrecognized color \<${c}\>") if($c =~ m{[^xyXY\d;\\\|\#]});
+	$c =~ s{[xX]}{38;5;}g;
+	$c =~ s{[yY]}{48;5;}g;
 	my @colors = split(/\|/, $c);
-	&FatalLine('empty color not allowed') unless(length(@colors));
+	&FatalLine('empty color not allowed') unless(@colors);
 	my @got = ();
 	for(my $cur = $mode; ; ) {
 		&FatalLine("Self-reference in \<${c}\>") if($got[$cur]);
@@ -689,7 +674,7 @@ sub SetColor($) {
 		}
 		my $col = $colors[$cur];
 		while($col eq '') {
-			&FatalLine("empty first color in \<${c}\>") if($cur == 0);
+			&FatalLine("empty first color in \<${c}\>") unless($cur);
 			$col = $colors[--$cur]
 		}
 		if($col =~ /^\\(\d+)$/) {
@@ -702,31 +687,31 @@ sub SetColor($) {
 	}
 }
 
-sub OpenTerm($) {
+sub OpenTerm {
 	&FatalTwice($_[0]) if($term);
 	$term = 1
 }
 
-sub OpenBlock($) {
+sub OpenBlock {
 	&FatalTwice($_[0]) if($block);
 	$block = 1;
 	@block = ()
 }
 
-sub OpenLower($) {
-	my($item) = @_;
+sub OpenLower {
+	my ($item) = @_;
 	&FatalTwice($item) if($lower);
 	$lower = 1;
 	$lowersep = (($item =~ /\=/) ? '' : 1);
 	@lower = ()
 }
 
-sub CloseTerm($) {
+sub CloseTerm {
 	&FatalNot($_[0]) unless($term);
 	$term = ''
 }
 
-sub CloseBlock($) {
+sub CloseBlock {
 	&FatalNot($_[0]) unless($block);
 	$block = '';
 	my($len1, $len2);
@@ -754,34 +739,49 @@ sub CloseBlock($) {
 	}
 }
 
-sub CloseLower($) {
+sub CloseLower {
 	&FatalNot($_[0]) unless($lower);
 	$lower = '';
-	if($lowersep) {
-		push(@block, '');
-	}
-	push(@block, @lower);
+	push(@block, '') if($lowersep);
+	push(@block, @lower)
 }
 
-sub Maximize($$) {
-	my($len, $test) = @_;
-	$$len = $test if($$len < $test);
+sub Maximize {
+	my ($len, $test) = @_;
+	$$len = $test if($$len < $test)
 }
 
-sub FatalTwice($) {
+sub FatalTwice {
 	&FatalLine('<' . $_[0] . '> opened twice');
 }
 
-sub FatalNote($) {
+sub FatalNote {
 	&FatalLine('<' . $_[0] . '> without opening');
 }
 
-sub FatalLine($) {
+sub FatalLine {
 	print(STDERR "fatal in line $linecount: ", $_[0], "\n");
-	exit(1);
+	exit(1)
 }
 
-sub Fatal($) {
+sub Fatal {
 	print(STDERR "fatal: ", $_[0], "\n");
-	exit(1);
+	exit(1)
 }
+
+for my $file (@output) {
+	open(my $fh, '>', $file) or &Fatal("cannot open $file for writing");
+	select($fh);
+	$block = $lower = $term = $color = '';
+	$linecount = 4;
+	for my $line (split(/\n/, $skeleton)) {
+		++$linecount;
+		&Process($line);
+	}
+	&Fatal('<block> not closed') if($block);
+	&Fatal('<lower> not closed') if($lower);
+	&Fatal('<term> not closed') if($term);
+	close($fh);
+	++$mode;
+}
+exit(0);

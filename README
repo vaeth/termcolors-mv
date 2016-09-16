@@ -5,7 +5,7 @@ For gentoo, the package is available over the mv overlay (via layman).
 This package contains two scripts and some "dircolors" colorschemes,
 all appropriate for unix type terminals with 8/16 and 256 colors.
 
-To create the dircolor schemes create e.g. the directory /etc/dir_colors,
+To create the dircolor schemes create e.g. the directory etc/dir_colors,
 change into it, and call the bin/DIR_COLORS-create script (perl is needed).
 These colorschemes are appropriate for 8/16 colors or 256 colors, respectively,
 and they were developed for standard system colors and
@@ -28,15 +28,16 @@ and to use the dircolors-mv wrapper mentioned below
 
 The scripts (in bin) are:
 
-256colors: A small perl script which just display 256 colors on capable
+256colors: A small perl script which just displays 256 colors on capable
 terminals in a systematic manner. The usage should be self-explaining.
+Calling "256colors man" shows you some further options.
 
 dircolors-mv: This script is a wrapper for dircolors.
 If you copy this script into your path you can use
 	eval "`dircolors-mv`"
 if you followed the above suggestion about the location.
 This will pick the corresponding file depending on the environment variables
-TERM (to determine whether the terminal is 8-bit capable by a heuristics),
+TERM (to determine whether the terminal is 8-bit capable by some heuristics),
 SOLARIZED (to determine whether output for solarized is desired), and
 DEFAULTS (for the path mentioned above).
 If the heuristics for the terminal does not work for you, just export TERM

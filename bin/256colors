@@ -1,9 +1,11 @@
 #!/usr/bin/env perl
-
+use warnings;
 use strict;
 use integer;
-use Pod::Usage;
-use Getopt::Long;
+use Getopt::Long ();
+# use Pod::Usage (); not mandatory, but no help/manpage without this
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -11,7 +13,7 @@ use Getopt::Long;
 
 =head1 SYNOPSIS
 
-B<256colors> [options]
+B<256colors> [options] [man|help]
 
 =head1 OPTIONS AND ARGUMENTS
 
@@ -55,6 +57,11 @@ This script is under the MIT license.
 
 =cut
 
+sub pod2usage {
+	require Pod::Usage;
+	&Pod::Usage::pod2usage
+}
+
 # Parse Options:
 
 my $set_scheme = '';
@@ -63,14 +70,19 @@ my $nonbold = '';
 my $boldonly = '';
 
 $Getopt::Long::bundling=1;
-GetOptions(
-  'help|h', sub { pod2usage(1) },
-  'man|?', sub { pod2usage(-verbose=>2) },
+Getopt::Long::GetOptions(
+  'help|h', sub { &pod2usage(1) },
+  'man|?', sub { &pod2usage(-verbose=>2) },
   'fg|f', \$foreground,
   'normal|n', \$nonbold,
   'bold|b', \$boldonly,
   'set|s', \$set_scheme
-) or pod2usage(2);
+) or &pod2usage(2);
+if(@ARGV) {
+	&pod2usage(-verbose => 2, -exit => 0) if($ARGV[0] =~ m{^[mM?]});
+	&pod2usage(0) if($ARGV[0] =~ m{^[hH]});
+	&pod2usage(2)
+}
 
 $foreground = 1 if($nonbold || $boldonly);
 $nonbold = 1 if(!$foreground);
@@ -101,7 +113,7 @@ if($set_scheme) {
 # display the colors
 
 my $finish = "\x1b[0m";
-my $nl = "${finish}\n";
+my $nl = $finish . "\n";
 my $bold;
 
 sub display {
@@ -118,13 +130,13 @@ sub cycle {
 		print "$text:\n";
 		$bold = '';
 		eval($func);
-		print "\n"
+		print("\n")
 	}
 	if(!$nonbold) {
 		print "$text in bold:\n";
 		$bold = 1;
 		eval($func);
-		print "\n"
+		print("\n")
 	}
 }
 
@@ -132,13 +144,11 @@ sub cycle {
 sub syscol {
 	my $fg = '7';
 	for(my $color = 0; $color < 16; $color++) {
-		$fg = '0' if $color;
-		if($color == 8) {
-			print $nl
-		}
+		$fg = '0' if($color);
+		print($nl) if($color == 8);
 		&display($color, $fg, $fg)
 	}
-	print $nl
+	print($nl)
 }
 &cycle('System colors', '&syscol');
 
@@ -153,11 +163,11 @@ sub colorcube {
 				my $color = 16 + ($red * 36) + ($green * 6) + $blue;
 				&display($color, $fg, $bg)
 			}
-			print $finish;
+			print($finish);
 			last if(++$red == $e);
-			print ' '
+			print(' ')
 		}
-		print "\n"
+		print("\n")
 	}
 }
 &cycle('Color cube (6x6x6)',
@@ -174,12 +184,12 @@ sub ramp() {
 		}
 		if($color == 243) {
 			$fg = '0';
-			print $nl
+			print($nl)
 		}
 	}
-	print $nl
+	print($nl)
 }
 &cycle('Grayscale ramp (24)', '&ramp');
 
-print "Use option -s to set scheme of Todd Larason\n" if(!$set_scheme);
-print "Use option -f for more colors in foreground\n" if(!$foreground);
+print("Use option -s to set scheme of Todd Larason\n") if(!$set_scheme);
+print("Use option -f for more colors in foreground\n") if(!$foreground);
