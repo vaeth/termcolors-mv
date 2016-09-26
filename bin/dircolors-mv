@@ -10,7 +10,7 @@ case ${TERM-} in
 	*)
 		color=:
 		num=`tput colors 2>/dev/null` && case ${num:-q} in
-		*[!0-9]*)
+		*[!0123456789]*)
 			false;;
 		esac && [ "$num" -ge 256 ] || color=
 esac
