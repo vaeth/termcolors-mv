@@ -624,11 +624,11 @@ sub Process {
 		&SetColor($item) unless($found);
 		return
 	}
-	if(($line eq '') || ($line =~ /^\#/)) {
+	if(($line eq '') || ($line =~ m{^\#})) {
 		if($block ne '') {
 			push(@block, $line)
 		} else {
-			print($line, "\n");
+			print($line, "\n")
 		}
 		if(($lower ne '') && ($line eq '')) {
 			push(@lower, $line)
@@ -642,15 +642,11 @@ sub Process {
 	unless($line =~ m{^(\S*)\s*(\<([^\>]*)\>)?\s*(\#.*)?$}) {
 		&FatalLine("cannot parse line: $line")
 	}
-	my ($item, $comment) = ($1, $4);
-	&SetColor($3) if($2 ne '');
+	my ($item, $comment) = ($1, (defined($4) ? $4 : ''));
+	&SetColor($3) if(defined($2) && ($2 ne ''));
 	my $col = (($item eq '') ? '' : $color);
-	if($col =~ s{\#}{}g) {
-		$item = '#' . $item
-	}
-	if($lower) {
-		push(@lower, [uc($item), $col, ''])
-	}
+	$item = '#' . $item if($col =~ s{\#}{}g);
+	push(@lower, [uc($item), $col, '']) if($lower);
 	if($block) {
 		push(@block, [$item, $col, $comment])
 	} else {
@@ -677,7 +673,7 @@ sub SetColor {
 			&FatalLine("empty first color in \<${c}\>") unless($cur);
 			$col = $colors[--$cur]
 		}
-		if($col =~ /^\\(\d+)$/) {
+		if($col =~ m{^\\(\d+)$}) {
 			$got[$cur] = 1;
 			$cur = $1 - 1;
 			next
@@ -702,19 +698,19 @@ sub OpenLower {
 	my ($item) = @_;
 	&FatalTwice($item) if($lower);
 	$lower = 1;
-	$lowersep = (($item =~ /\=/) ? '' : 1);
+	$lowersep = !($item =~ m{\=});
 	@lower = ()
 }
 
 sub CloseTerm {
-	&FatalNot($_[0]) unless($term);
+	&FatalNot(@_) unless($term);
 	$term = ''
 }
 
 sub CloseBlock {
-	&FatalNot($_[0]) unless($block);
+	&FatalNot(@_) unless($block);
 	$block = '';
-	my($len1, $len2);
+	my ($len1, $len2);
 	$len1 = $len2 = 0;
 	for my $words (@block) {
 		next unless(ref($words) eq 'ARRAY');
@@ -728,9 +724,7 @@ sub CloseBlock {
 			print($words, "\n");
 			next
 		}
-		my $out = $words->[0];
-		my $col = $words->[1];
-		my $com = $words->[2];
+		my ($out, $col, $com) = @$words;
 		if(($col ne '') || ($com ne '')) {
 			$out .= ("\t" x (($len1 - length($out)) / 8)) . $col;
 			$out .= ("\t" x (($len2 - length($col)) / 8)) . $com if($com ne '');
@@ -740,7 +734,7 @@ sub CloseBlock {
 }
 
 sub CloseLower {
-	&FatalNot($_[0]) unless($lower);
+	&FatalNot(@_) unless($lower);
 	$lower = '';
 	push(@block, '') if($lowersep);
 	push(@block, @lower)
@@ -752,20 +746,20 @@ sub Maximize {
 }
 
 sub FatalTwice {
-	&FatalLine('<' . $_[0] . '> opened twice');
+	&FatalLine('<' . @_ . '> opened twice');
 }
 
 sub FatalNote {
-	&FatalLine('<' . $_[0] . '> without opening');
+	&FatalLine('<' . @_ . '> without opening');
 }
 
 sub FatalLine {
-	print(STDERR "fatal in line $linecount: ", $_[0], "\n");
+	print(STDERR "fatal in line $linecount: ", @_, "\n");
 	exit(1)
 }
 
 sub Fatal {
-	print(STDERR "fatal: ", $_[0], "\n");
+	print(STDERR "fatal: ", @_, "\n");
 	exit(1)
 }
 
@@ -782,6 +776,6 @@ for my $file (@output) {
 	&Fatal('<lower> not closed') if($lower);
 	&Fatal('<term> not closed') if($term);
 	close($fh);
-	++$mode;
+	++$mode
 }
 exit(0);
