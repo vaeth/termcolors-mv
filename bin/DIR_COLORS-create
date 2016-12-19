@@ -2,6 +2,11 @@
 use integer;
 use strict;
 use warnings;
+
+# Colors have the format <(1)|(2)|(3)|(4)> (see @output below for the order).
+# Usually (1)-(4) are the entry or x... or y... for 256 color/background.
+# Each of (2), (3), (4) can be empty or omitted (meaning same as the previous);
+# it can also be \1, \2, or \3 (meaning the entry of (1), (2), or (3)).
 my $skeleton = << 'END_OF_SKELETON';
 # Configuration file for dircolors, a utility to help you set the
 # LS_COLORS environment variable used by GNU ls with the --color option.
@@ -150,7 +155,7 @@ SETGID		<01;45|30;44|y90|30;44> # file that is setgid (g+s)
 CAPABILITY	<30;46||01;31;46|\2> # file with capability
 STICKY_OTHER_WRITABLE	<30;43> # dir that is sticky and other-writable (+t,o+w)
 OTHER_WRITABLE	<01;31;43|||01;x88;43> # dir that is other-writable (o+w) and not sticky
-STICKY		<01;34;43> # dir with the sticky bit set (+t) and not other-writable
+STICKY		<04;01;33|04;33|01;x221> # dir with the sticky bit set (+t) and not other-writable
 EXEC		<01;37> # This is for files with execute permission
 </block>
 
