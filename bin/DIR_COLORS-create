@@ -409,6 +409,8 @@ EXEC		<01;37> # This is for files with execute permission
 .ear
 .sar
 .alz
+.crate
+.cra
 .xpi
 .apk
 .rz
