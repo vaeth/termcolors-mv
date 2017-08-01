@@ -24,6 +24,8 @@ Run() {
 	for s in ${SOLARIZED:+"$r-solarized"} "$r"
 	do	for f in ${color:+"$s"-256} "$s"
 		do	test -r "$f" || continue
+			test -d "$f" && continue
+			test -f "$f" || exit 0
 			exec dircolors ${1+"$@"} -- "$f"
 			exit
 		done
@@ -31,25 +33,11 @@ Run() {
 }
 for p in \
 	${DEFAULTS:+"$DEFAULTS/dir_colors"} \
-	${DEFAULTS:+"$DEFAULTS/dircolors"} \
-	'/etc/dir_colors' \
-	'/etc/dircolors' \
 	"$HOME/.dir_colors" \
-	"$HOME/.dircolors" \
 	"$HOME/.config/dir_colors" \
-	"$HOME/.config/dircolors"
-do	test -d "$p" || continue
-	Run "$p/DIR_COLORS" ${1+"$@"}
-	Run "$p/dir_colors" ${1+"$@"}
-	Run "$p/dircolors" ${1+"$@"}
+	'/etc/dir_colors' \
+	'/usr/lib/dir_colors' \
+	'/lib/dir_colors'
+do	! test -d "$p" || Run "$p/DIR_COLORS" ${1+"$@"}
 done
-for p in \
-	${DEFAULTS:+"$DEFAULTS"} \
-	'/etc' \
-	"$HOME/.config"
-do	Run "$p/DIR_COLORS" ${1+"$@"}
-	Run "$p/dir_colors" ${1+"$@"}
-	Run "$p/dircolors" ${1+"$@"}
-done
-Run "$HOME/.dircolors" ${1+"$@"}
 exit 2
