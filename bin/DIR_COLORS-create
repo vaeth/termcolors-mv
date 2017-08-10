@@ -355,6 +355,9 @@ EXEC		<01;37> # This is for files with execute permission
 .taz
 .tgz
 .gz
+.tbr
+.brotli
+.bro
 .tbz
 .bz
 .bz2
