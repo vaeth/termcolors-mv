@@ -358,6 +358,11 @@ EXEC		<01;37> # This is for files with execute permission
 .tbr
 .brotli
 .bro
+.zst
+.zstd
+.tzs
+.tzst
+.tzstd
 .tbz
 .bz
 .bz2
