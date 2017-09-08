@@ -372,10 +372,13 @@ EXEC		<01;37> # This is for files with execute permission
 .lzm
 .lzo
 .lz
+.tlz
 .lz4
+.tz4
+.tl4
+.tlz4
 .xz
 .txz
-.tlz
 .lrz
 .tlr
 .tlrz
