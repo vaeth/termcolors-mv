@@ -3,10 +3,19 @@ use integer;
 use strict;
 use warnings;
 
-# Colors have the format <(1)|(2)|(3)|(4)> (see @output below for the order).
-# Usually (1)-(4) are the entry or x... or y... for 256 color/background.
-# Each of (2), (3), (4) can be empty or omitted (meaning same as the previous);
-# it can also be \1, \2, or \3 (meaning the entry of (1), (2), or (3)).
+# Essentially, everything below is written to the 4 @output files (see below).
+# There are some XML-type tags honoured:
+# <term> ... </term>:   These entries are preceeded by TERM (colorizable)
+# <block> ... </block>: Everything inside is assigned the "current" color
+# <lower> ... </lower>: Outputs the whole content in lower- and uppercase
+# <lowerblock> ... </lowerblock>: Short for <block><lower> ... </lower></block>
+# Then there is one tag for colors:
+# A color tag has the format <(1)|(2)|(3)|(4)> (each numer for one @output).
+# Each of the entries (1)-(4) is either a text (which is output) or it has
+# the form x... or y... for 256 color/background.
+# Each of the entries (2), (3), (4) can be empty or omitted: In that case the
+# corresponding entry automatically gets the meaning of the previous entry.
+# It can also be \1, \2, or \3 (meaning the entry of (1), (2), or (3)).
 my $skeleton = << 'END_OF_SKELETON';
 # Configuration file for dircolors, a utility to help you set the
 # LS_COLORS environment variable used by GNU ls with the --color option.
@@ -27,85 +36,29 @@ my $skeleton = << 'END_OF_SKELETON';
 <term>
 Eterm
 ansi
-color-xterm
-color_xterm
+*color*
 con[0-9]*x[0-9]*
-con132x25
-con132x30
-con132x43
-con132x60
-con80x25
-con80x28
-con80x30
-con80x43
-con80x50
-con80x60
 cons25
 console
 cygwin
 dtterm
-eterm-color
 gnome
-gnome-256color
 hurd
 jfbterm
 konsole
 kterm
 linux
 linux-c
-mach-color
-mach-gnu-color
 mlterm
 pcansi
 putty
-putty-256color
 rxvt*
-rxvt
-rxvt-256color
-rxvt-cygwin
-rxvt-cygwin-native
-rxvt-unicode
-rxvt-unicode-256color
-rxvt-unicode256
 screen*
-screen
-screen-256color
-screen-256color-bce
-screen-bce
-screen-bce.xterm-new
-screen-bce.xterm-xfree86
-screen-w
-screen.Eterm
-screen.linux
-screen.rxvt
-screen.xterm-new
-screen.xterm-xfree86
 st
-st-256color
 terminator
 tmux*
-tmux
-tmux-256color
-tmux-256color-bce
-tmux-bce
-tmux-bce.xterm-new
-tmux-bce.xterm-xfree86
-tmux-w
-tmux.Eterm
-tmux.linux
-tmux.rxvt
-tmux.xterm-new
-tmux.xterm-xfree86
 vt100
 xterm*
-xterm
-xterm-16color
-xterm-256color
-xterm-88color
-xterm-color
-xterm-debian
-xterm-new
-xterm-xfree86
 </term>
 
 ## Documentation
@@ -513,6 +466,8 @@ EXEC		<01;37> # This is for files with execute permission
 .jpg
 .jpe
 .jpeg
+.mjpg
+.mjpeg
 .iff
 .art
 .wpg
@@ -643,7 +598,7 @@ sub Process {
 		&SetColor($item) unless($found);
 		return
 	}
-	if(($line eq '') || ($line =~ m{^\#})) {
+	if(($line eq '') || (substr($line, 0, 1) eq '#')) {
 		if($block ne '') {
 			push(@block, $line)
 		} else {
@@ -789,7 +744,7 @@ for my $file (@output) {
 	$linecount = 4;
 	for my $line (split(/\n/, $skeleton)) {
 		++$linecount;
-		&Process($line);
+		&Process($line)
 	}
 	&Fatal('<block> not closed') if($block);
 	&Fatal('<lower> not closed') if($lower);
