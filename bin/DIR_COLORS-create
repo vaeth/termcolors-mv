@@ -5,6 +5,7 @@ use warnings;
 
 # Essentially, everything below is written to the 4 @output files (see below).
 # There are some XML-type tags honoured:
+# <poor> ... </poor>:   This block is ignored unless an argument is passed
 # <term> ... </term>:   These entries are preceeded by TERM (colorizable)
 # <block> ... </block>: Everything inside is assigned the "current" color
 # <lower> ... </lower>: Outputs the whole content in lower- and uppercase
@@ -60,6 +61,68 @@ tmux*
 vt100
 xterm*
 </term>
+<poor>
+# For the case that glob patterns are not supported, we add the common cases...
+<term>
+color-xterm
+color_xterm
+con132x25
+con132x30
+con132x43
+con132x60
+con80x25
+con80x28
+con80x30
+con80x43
+con80x50
+con80x60
+eterm-color
+gnome-256color
+mach-color
+mach-gnu-color
+putty-256color
+rxvt
+rxvt-256color
+rxvt-cygwin
+rxvt-cygwin-native
+rxvt-unicode
+rxvt-unicode-256color
+rxvt-unicode256
+screen
+screen-256color
+screen-256color-bce
+screen-bce
+screen-bce.xterm-new
+screen-bce.xterm-xfree86
+screen-w
+screen.Eterm
+screen.linux
+screen.rxvt
+screen.xterm-new
+screen.xterm-xfree86
+st-256color
+tmux
+tmux-256color
+tmux-256color-bce
+tmux-bce
+tmux-bce.xterm-new
+tmux-bce.xterm-xfree86
+tmux-w
+tmux.Eterm
+tmux.linux
+tmux.rxvt
+tmux.xterm-new
+tmux.xterm-xfree86
+xterm
+xterm-16color
+xterm-256color
+xterm-88color
+xterm-color
+xterm-debian
+xterm-new
+xterm-xfree86
+</term>
+</poor>
 
 ## Documentation
 #
@@ -552,102 +615,113 @@ my @output = (
 	'DIR_COLORS-solarized-256'
 );
 $skeleton =~ s{\r}{}go;
-my ($block, $lower, $term);
+my ($block, $lower, $term, $poor);
 my $lowersep;
+my $ignoring;
 my $color;
 my @block;
 my @lower;
 my $mode = 0;
+my $include_poor = '';
 my $linecount;
 
-sub Process {
+sub process_line {
 	my ($line) = @_;
 	chomp($line);
 	$line =~ s{\s*$}{}g;
-	if($line =~ m{^\<(.*)\>$}) {
+	if ($line =~ m{^\<(.*)\>$}) {
 		my $item = $1;
+		if ($item =~ m{^\/poor$}i) {
+			&close_poor();
+			return
+		} elsif ($item =~ m{^poor$}i) {
+			&open_poor($item);
+			return
+		}
+		return if ($ignoring);
+		if ($item =~ m{^\/term$}i) {
+			&close_term();
+			return
+		}
 		my $found = '';
-		if($item =~ m{^\/}) {
-			if($item =~ m{lower}i) {
-				&CloseLower();
+		if ($item =~ m{^\/}) {
+			if ($item =~ m{lower}i) {
+				&close_lower();
 				$found = 1
 			}
-			if($item =~ m{block}i) {
-				&CloseBlock();
-				$found = 1
+			if ($item =~ m{block}i) {
+				&close_block();
+				return
 			}
-			if($item =~ m{term}i) {
-				&CloseTerm();
-				$found = 1
-			}
-			return if($found);
-			&FatalLine("Tag $item not understood")
+			return if ($found);
+			&fatal_line("tag $item not understood")
 		}
-		if($item =~ m{block}i) {
-			&OpenBlock($item);
+		if ($item =~ m{term}i) {
+			&open_term($item);
+			return
+		}
+		if ($item =~ m{block}i) {
+			&open_block($item);
 			$found = 1
 		}
-		if($item =~ m{lower}i) {
-			&OpenLower($item);
-			$found = 1
+		if ($item =~ m{lower}i) {
+			&open_lower($item);
+			return
 		}
-		if($item =~ m{term}i) {
-			&OpenTerm($item);
-			$found = 1
-		}
-		&SetColor($item) unless($found);
+		&set_color($item) unless ($found);
 		return
 	}
-	if(($line eq '') || (substr($line, 0, 1) eq '#')) {
-		if($block ne '') {
+	return if ($ignoring);
+	if (($line eq '') || (substr($line, 0, 1) eq '#')) {
+		if ($block ne '') {
 			push(@block, $line)
 		} else {
 			print($line, "\n")
 		}
-		if(($lower ne '') && ($line eq '')) {
+		if (($lower ne '') && ($line eq '')) {
 			push(@lower, $line)
 		}
 		return
 	}
-	if($term) {
+	if ($term) {
 		print('TERM ', $line, "\n");
 		return
 	}
-	unless($line =~ m{^(\S*)\s*(\<([^\>]*)\>)?\s*(\#.*)?$}) {
-		&FatalLine("cannot parse line: $line")
+	unless ($line =~ m{^(\S*)\s*(\<([^\>]*)\>)?\s*(\#.*)?$}) {
+		&fatal_line("cannot parse line: $line")
 	}
 	my ($item, $comment) = ($1, (defined($4) ? $4 : ''));
-	&SetColor($3) if(defined($2) && ($2 ne ''));
+	&set_color($3) if (defined($2) && ($2 ne ''));
 	my $col = (($item eq '') ? '' : $color);
-	$item = '#' . $item if($col =~ s{\#}{}g);
-	push(@lower, [uc($item), $col, '']) if($lower);
-	if($block) {
+	$item = '#' . $item if ($col =~ s{\#}{}g);
+	push(@lower, [uc($item), $col, '']) if ($lower);
+	if ($block) {
 		push(@block, [$item, $col, $comment])
 	} else {
-		&FatalLine("item without a block: $line");
+		&fatal_line("item without a block: $line");
 	}
 }
 
-sub SetColor {
+sub set_color {
 	my ($c) = @_;
-	&FatalLine("unrecognized color \<${c}\>") if($c =~ m{[^xyXY\d;\\\|\#]});
+	&fatal_line("unrecognized color \<${c}\>") if ($c =~ m{[^xyXY\d;\\\|\#]});
 	$c =~ s{[xX]}{38;5;}g;
 	$c =~ s{[yY]}{48;5;}g;
 	my @colors = split(/\|/, $c);
-	&FatalLine('empty color not allowed') unless(@colors);
+	&fatal_line('empty color not allowed') unless (@colors);
 	my @got = ();
-	for(my $cur = $mode; ; ) {
-		&FatalLine("Self-reference in \<${c}\>") if($got[$cur]);
-		if(scalar(@colors) - 1 < $cur) {
+	for (my $cur = $mode; ; ) {
+		&fatal_line("Self-reference in \<${c}\>") if ($got[$cur]);
+		if (scalar(@colors) - 1 < $cur) {
 			$cur = scalar(@colors) - 1;
 			next
 		}
 		my $col = $colors[$cur];
 		while($col eq '') {
-			&FatalLine("empty first color in \<${c}\>") unless($cur);
+			&fatal_line("empty first color in \<${c}\>") unless ($cur);
 			$col = $colors[--$cur]
 		}
-		if($col =~ m{^\\(\d+)$}) {
+		if ($col =~ m{^\\(\d+)$}) {
 			$got[$cur] = 1;
 			$cur = $1 - 1;
 			next
@@ -657,98 +731,119 @@ sub SetColor {
 	}
 }
 
-sub OpenTerm {
-	&FatalTwice($_[0]) if($term);
+sub open_term {
+	&fatal_twice if ($term);
 	$term = 1
 }
 
-sub OpenBlock {
-	&FatalTwice($_[0]) if($block);
+sub open_block {
+	&fatal_twice if ($block);
 	$block = 1;
 	@block = ()
 }
 
-sub OpenLower {
+sub open_lower {
+	&fatal_twice if ($lower);
 	my ($item) = @_;
-	&FatalTwice($item) if($lower);
 	$lower = 1;
 	$lowersep = !($item =~ m{\=});
 	@lower = ()
 }
 
-sub CloseTerm {
-	&FatalNot(@_) unless($term);
+sub open_poor {
+	&fatal_twice if ($poor);
+	$poor = 1;
+	$ignoring = 1 unless ($include_poor)
+}
+
+sub close_term {
+	&fatal_not unless ($term);
 	$term = ''
 }
 
-sub CloseBlock {
-	&FatalNot(@_) unless($block);
+sub close_block {
+	&fatal_not unless ($block);
 	$block = '';
 	my ($len1, $len2);
 	$len1 = $len2 = 0;
 	for my $words (@block) {
-		next unless(ref($words) eq 'ARRAY');
-		&Maximize(\$len1, length($words->[0]));
-		&Maximize(\$len2, length($words->[1]))
+		next unless (ref($words) eq 'ARRAY');
+		&maximize(\$len1, length($words->[0]));
+		&maximize(\$len2, length($words->[1]))
 	}
 	$len1 = (($len1 + 9) / 8) * 8 + 7;
 	$len2 = (($len2 + 9) / 8) * 8 + 7;
 	for my $words (@block) {
-		if(ref($words) ne 'ARRAY') {
+		if (ref($words) ne 'ARRAY') {
 			print($words, "\n");
 			next
 		}
 		my ($out, $col, $com) = @$words;
-		if(($col ne '') || ($com ne '')) {
+		if (($col ne '') || ($com ne '')) {
 			$out .= ("\t" x (($len1 - length($out)) / 8)) . $col;
-			$out .= ("\t" x (($len2 - length($col)) / 8)) . $com if($com ne '');
+			$out .= ("\t" x (($len2 - length($col)) / 8)) . $com if ($com ne '');
 		}
 		print($out, "\n")
 	}
 }
 
-sub CloseLower {
-	&FatalNot(@_) unless($lower);
+sub close_lower {
+	&fatal_not unless ($lower);
 	$lower = '';
-	push(@block, '') if($lowersep);
+	push(@block, '') if ($lowersep);
 	push(@block, @lower)
 }
 
-sub Maximize {
+sub close_poor {
+	&fatal_not unless ($poor);
+	$poor = $ignoring = '';
+}
+
+sub maximize {
 	my ($len, $test) = @_;
-	$$len = $test if($$len < $test)
+	$$len = $test if ($$len < $test)
 }
 
-sub FatalTwice {
-	&FatalLine('<' . @_ . '> opened twice');
+sub fatal_twice {
+	&fatal_line('<' . @_ . '> opened twice');
 }
 
-sub FatalNote {
-	&FatalLine('<' . @_ . '> without opening');
+sub fatal_note {
+	&fatal_line('<' . @_ . '> without opening');
 }
 
-sub FatalLine {
+sub fatal_line {
 	print(STDERR "fatal in line $linecount: ", @_, "\n");
 	exit(1)
 }
 
-sub Fatal {
+sub fatal {
 	print(STDERR "fatal: ", @_, "\n");
 	exit(1)
 }
 
+print("Generating files:\n", join("\n", @output), "\n\n");
+if (@ARGV) {
+	$include_poor = 1;
+	print("Including obsolete data needed for <coreutils-8.25.\n",
+	"Pass no argument if you do not want that.\n")
+} else {
+	print("Exluding obsolete data needed only for <coreutils-8.25.\n",
+	"Pass an argument if you want to include these.\n")
+}
 for my $file (@output) {
-	open(my $fh, '>', $file) or &Fatal("cannot open $file for writing");
+	open(my $fh, '>', $file) or &fatal("cannot open $file for writing");
 	select($fh);
-	$block = $lower = $term = $color = '';
+	$block = $lower = $term = $poor = $ignoring = $color = '';
 	$linecount = 4;
 	for my $line (split(/\n/, $skeleton)) {
 		++$linecount;
-		&Process($line)
+		&process_line($line)
 	}
-	&Fatal('<block> not closed') if($block);
-	&Fatal('<lower> not closed') if($lower);
-	&Fatal('<term> not closed') if($term);
+	&fatal('<block> not closed') if ($block);
+	&fatal('<lower> not closed') if ($lower);
+	&fatal('<term> not closed') if ($term);
+	&fatal('<poor> not closed') if ($poor);
 	close($fh);
 	++$mode
 }
