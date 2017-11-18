@@ -269,6 +269,7 @@ EXEC		<01;37> # This is for files with execute permission
 
 <lower>
 .txt
+.md
 .me
 .1st
 .now
@@ -847,4 +848,4 @@ for my $file (@output) {
 	close($fh);
 	++$mode
 }
-exit(0);
+1
