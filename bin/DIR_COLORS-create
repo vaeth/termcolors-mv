@@ -1,4 +1,6 @@
 #!/usr/bin/env perl
+# (C) Martin VE<auml>th E<lt>martin@mvath.deE<gt>
+# SPDX-License-Identifier: MIT
 use integer;
 use strict;
 use warnings;

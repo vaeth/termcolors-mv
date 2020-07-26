@@ -1,5 +1,9 @@
 # termcolors-mv
 
+(C) Martin Väth <martin at mvath.de>
+This project is under the MIT license
+SPDX-License-Identifier: MIT
+
 256colors sample script, dircolors configuration files, and a dircolors wrapper
 
 For gentoo, the package is available over the mv overlay (via layman).
