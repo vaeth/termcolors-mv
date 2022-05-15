@@ -384,9 +384,12 @@ EXEC		<01;37> # This is for files with execute permission
 .tzst
 .tzstd
 .tbz
+.tb3
 .bz
 .bz2
+.bz3
 .tbz2
+.tbz3
 .lzma
 .lzm
 .lzo
