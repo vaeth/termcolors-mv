@@ -570,13 +570,16 @@ EXEC		<01;37> # This is for files with execute permission
 .rtf
 .odt
 .fig
+.cbr
 .djv
 .djvu
 .epub
 .prc
+.kfx
 .lit
 .mobi
 .azw
+.azw3
 </lowerblock>
 
 # movie formats
