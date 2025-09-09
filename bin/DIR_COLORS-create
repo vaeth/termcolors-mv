@@ -463,6 +463,7 @@ EXEC		<01;37> # This is for files with execute permission
 .au
 .mp3
 .m4a
+.m4b
 .ogg
 .flac
 .aac
@@ -565,12 +566,16 @@ EXEC		<01;37> # This is for files with execute permission
 .dvi
 .ps
 .eps
+.fb2
 .pdf
 .doc
+.docx
 .rtf
 .odt
 .fig
 .cbr
+.cbt
+.cbz
 .djv
 .djvu
 .epub
@@ -578,6 +583,7 @@ EXEC		<01;37> # This is for files with execute permission
 .kfx
 .lit
 .mobi
+.chm
 .azw
 .azw3
 </lowerblock>
